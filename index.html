@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>bigF.art Easter Egg Hunt</title>
+<style type="text/css">
+html, body {
+    /* background grid */
+    background-color: #eee;
+    background-image: linear-gradient(45deg, #dadada 25%, transparent 25%, transparent 75%, #dadada 75%, #dadada),linear-gradient(45deg, #dadada 25%, transparent 25%, transparent 75%, #dadada 75%, #dadada);
+    background-size: 30px 30px;
+    background-position: 0 0, 15px 15px;
+    /* leave it to hide the scrollbars */
+    overflow: hidden;
+
+    margin:0px;
+    padding:0px;
+}
+
+#wrap{
+    width:512px;
+    height:512px;
+    background: green;
+}
+
+#wrap svg{
+    margin-left:64px;
+    margin-top:64px;
+}
+
+</style>
+</head>
+<body>
+    <div id="wrap">
+        <!-- License: MIT. Made by iconoir: https://iconoir.com/ -->
+        <svg width="384px" height="384px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop id="g1" offset="0%" stop-color="#F60" />
+          <stop id="g2" offset="100%" stop-color="#FF6" />
+        </linearGradient>
+        <path id="egg" d="M12 22C16.4183 22 20 18.4183 20 14C20 9.58172 16.4183 2 12 2C7.58172 2 4 9.58172 4 14C4 18.4183 7.58172 22 12 22Z" fill="url(#gradient)" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path id="crack" d="M9.5 3.5L12 8L9.5 11L12 14.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+</body>
+<script id="bigf-helper">
+    //---- do not edit the following code (you can indent as you wish)
+    let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+
+    var bigFhash = new URLSearchParams(window.location.search).get('hash')
+    if(!bigFhash){
+        bigFhash = Array(49).fill(0).map(_=>alphabet[(Math.random()*alphabet.length)|0]).join('');
+        window.location = window.location + "?hash=" + bigFhash;
+    }
+    if(bigFhash=="random"){
+        bigFhash = Array(49).fill(0).map(_=>alphabet[(Math.random()*alphabet.length)|0]).join('');
+        console.log("random bigFhash",bigFhash)
+    }
+
+
+    let b58dec = str=>[...str].reduce((p,c)=>p*alphabet.length+alphabet.indexOf(c)|0, 0)
+    let regex = new RegExp(".{" + ((bigFhash.length/4)|0) + "}", 'g')
+    let hashes = bigFhash.match(regex).map(h => b58dec(h))
+
+    //https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+    let sfc32 = (a, b, c, d) => {
+        return () => {
+            a |= 0; b |= 0; c |= 0; d |= 0
+            var t = (a + b | 0) + d | 0
+            d = d + 1 | 0
+            a = b ^ b >>> 9
+            b = c + (c << 3) | 0
+            c = c << 21 | c >>> 11
+            c = c + t | 0
+            return (t >>> 0) / 4294967296
+        }
+    }
+    var bigFrand = sfc32(...hashes);//
+    Math.random = bigFrand;//override math.random for other libs
+
+    if(window.bigFart == undefined){
+        console.log("not running in bigFart renderer")
+        window.bigFart = function(){
+            console.log("window.bigFart()",window.bigFAttributes)
+        }
+    }
+//---- /do not edit the following code
+</script>
+
+<script type="text/javascript">
+function random_color(){
+    var hue = (360*bigFrand()).toFixed(2);
+    return 'hsl('+ hue +',100%,75%)'
+}
+
+(function() {
+
+    var bg_color = random_color();
+    document.getElementById("wrap").style.background = bg_color;
+    //document.getElementById("egg").style.fill = random_color();
+
+    var cracked = (bigFrand() > 0.7);
+    if(!cracked){
+        document.getElementById("crack").remove();
+    }
+
+    var gradient = (bigFrand() > 0.5);
+    var egg_color = random_color();
+    var egg_color2 = false;
+
+    if(gradient){
+        egg_color2 = random_color();
+        document.getElementById("g1").setAttribute("stop-color",egg_color);
+        document.getElementById("g2").setAttribute("stop-color",egg_color2);
+    }else{
+        document.getElementById("g1").setAttribute("stop-color",egg_color);
+        document.getElementById("g2").setAttribute("stop-color",egg_color);
+    }
+
+
+    window.bigFAttributes = {
+        cracked: cracked,
+        gradient: gradient,
+        bg_color: bg_color,
+        egg_color: egg_color,
+        egg_color2: egg_color2,
+    }
+    window.bigFart();
+
+})();
+</script>
+</html>
